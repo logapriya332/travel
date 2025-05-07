@@ -5,12 +5,7 @@
   <title>Plan Your Trip - Spark Travels</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       background: url('https://coachbuildersindia.com/wp-content/uploads/2023/09/Interior-of-Sleeper-Buses-in-India-1024x577.webp') no-repeat center center fixed;
       background-size: cover;
@@ -20,8 +15,7 @@
       flex-direction: column;
       align-items: center;
     }
-
-    .trip-container {
+    .card {
       background: rgba(255, 255, 255, 0.2);
       padding: 40px;
       border-radius: 16px;
@@ -29,43 +23,82 @@
       max-width: 600px;
       width: 90%;
       backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
     }
-
-    .trip-container h2 {
+    .card h2 {
       text-align: center;
       margin-bottom: 30px;
       color: #0077b6;
     }
-
-    .trip-form label {
+    .form-row {
+      margin-bottom: 15px;
+    }
+    label {
       display: block;
       margin-bottom: 6px;
       font-weight: 600;
     }
+    input {
+  width: 100%;
+  padding: 12px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background-color: #ffffffcc;
+  color: #333;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+}
 
-    .trip-form input,
-    .trip-form select,
-    .trip-form button {
-      width: 100%;
-      padding: 12px;
-      margin-bottom: 20px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      font-size: 15px;
-    }
+button {
+  width: 100%;
+  padding: 12px;
+  font-size: 16px;
+  border-radius: 8px;
+  background-color: #0077b6;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  transition: 0.3s ease;
+}
 
-    .trip-form button {
+button:hover {
+  background-color: #005f8a;
+}
+
+select {
+  width: 100%;
+  padding: 12px 40px 12px 12px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background-color: #ffffffcc;
+  color: #333;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg fill='gray' viewBox='0 0 24 24' width='24' height='24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 20px;
+}
+
+select:focus {
+  outline: none;
+  border-color: #0077b6;
+  box-shadow: 0 0 5px rgba(0, 119, 182, 0.4);
+}
+
+     
+    button {
       background-color: #0077b6;
       color: #fff;
       border: none;
+      cursor: pointer;
       transition: 0.3s ease;
     }
-
-    .trip-form button:hover {
+    button:hover {
       background-color: #005f8a;
     }
-
     #map {
       height: 400px;
       width: 90%;
@@ -74,33 +107,32 @@
       border-radius: 12px;
       border: 2px solid #0077b6;
     }
-
-    @media (max-width: 600px) {
-      .trip-container {
-        padding: 20px;
-      }
+      @media (max-width: 600px) {
+    .card {
+      padding: 20px;
     }
+    #map {
+      height: 250px;
+    }
+  }
   </style>
 </head>
 <body>
 
-  <div class="card">
+<div class="card">
   <h2>Plan Your Private Bus Trip</h2>
-  <form id="travel-form">
+  <form id="travelForm">
     <div class="form-row">
       <label for="pickup">Pickup Location:</label>
-      <input type="text" id="pickup" name="pickup" placeholder="e.g., Chennai">
+      <input type="text" id="pickup" name="pickup" list="cities" placeholder="e.g., Chennai">
     </div>
 
     <div class="form-row">
-      <label for="destination">Destination:</label>
-      <select id="destination" name="destination">
-        <option value="">-- Select Destination --</option>
-        <option value="Coimbatore">Coimbatore</option>
-        <option value="Madurai">Madurai</option>
-        <!-- Add more options -->
-      </select>
-    </div>
+  <label for="destination">Destination:</label>
+  <input type="text" id="destination" name="destination" list="cities" placeholder="e.g., Mumbai">
+</div>
+
+  
 
     <div class="form-row">
       <label for="date">Travel Date:</label>
@@ -113,6 +145,7 @@
         <option value="">-- Select Bus Type --</option>
         <option value="AC">AC</option>
         <option value="Non-AC">Non-AC</option>
+        <option value="Luxury">Luxury</option>
       </select>
     </div>
 
@@ -120,13 +153,15 @@
       <button type="submit">Find Buses</button>
     </div>
   </form>
-
-  <!-- Map can go here if needed -->
-  <div id="map" style="height: 200px; margin-top: 20px;"></div>
 </div>
 
-  <datalist id="cities"></datalist>
+<datalist id="cities"></datalist>
+
+<div id="map"></div>
+
+<!-- Leaflet map JS -->
 <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+
 
 <script>
   document.addEventListener("DOMContentLoaded", () => {
@@ -134,38 +169,49 @@
     const today = new Date().toISOString().split('T')[0];
     document.getElementById("date").setAttribute("min", today);
 
-    // Initialize map
+    // Initialize map centered on India
     const map = L.map('map').setView([22.9734, 78.6569], 5);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; OpenStreetMap contributors'
     }).addTo(map);
 
-    // Load city list into datalist
-    fetch('indian_cities_500.json')
-      .then(response => response.json())
+    // Load Indian cities into datalist and destination dropdown
+    fetch("indian_cities_500.json")
+      .then(res => res.json())
       .then(data => {
-        const datalist = document.getElementById('cities');
+        const datalist = document.getElementById("cities");
+        const destinationDropdown = document.getElementById("destination");
+
         data.forEach(city => {
-          const option = document.createElement('option');
+          // For auto-complete
+          const option = document.createElement("option");
           option.value = city;
           datalist.appendChild(option);
         });
       })
-      .catch(error => console.error('Error loading cities:', error));
+      .catch(err => console.error("Failed to load city list:", err));
   });
 
-  // 🚀 Handle form submission and redirect with query params
+  // Handle form submission with validation
   document.getElementById("travelForm").addEventListener("submit", function (e) {
-    e.preventDefault(); // Stop form from reloading page
+    e.preventDefault();
 
     const pickup = document.getElementById("pickup").value.trim();
     const destination = document.getElementById("destination").value.trim();
     const busType = document.getElementById("busType").value.trim();
+    const date = document.getElementById("date").value;
 
-    const query = `?pickup=${encodeURIComponent(pickup)}&destination=${encodeURIComponent(destination)}&busType=${encodeURIComponent(busType)}`;
+    if (!pickup || !destination || !busType || !date) {
+      alert("Please fill in all fields before proceeding.");
+      return;
+    }
+
+    const query = `?pickup=${encodeURIComponent(pickup)}&destination=${encodeURIComponent(destination)}&busType=${encodeURIComponent(busType)}&date=${encodeURIComponent(date)}`;
     window.location.href = "buses.html" + query;
   });
 </script>
+
+
 
 </body>
 </html>
