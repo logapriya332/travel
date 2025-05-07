@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Pay via UPI</title>
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      overflow: hidden;
+      font-family: Arial, sans-serif;
+    }
+
+    /* Background video styling */
+    #bg-video {
+      position: fixed;
+      top: 0;
+      left: 0;
+      min-width: 100%;
+      min-height: 100%;
+      object-fit: cover;
+      z-index: -1;
+    }
+
+    body {
+      text-align: center;
+      background: #f4f4f4;
+      padding-top: 50px;
+    }
+
+    .box {
+      background: rgba(255, 255, 255, 0.9); /* Slight transparency */
+      padding: 30px;
+      display: inline-block;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    }
+
+    .qr {
+      width: 250px;
+      margin: 20px 0;
+    }
+
+    input, button {
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      width: 90%;
+      max-width: 300px;
+    }
+
+    button {
+      background: #28a745;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    button:hover {
+      opacity: 0.9;
+    }
+
+    #status {
+      margin-top: 15px;
+      font-weight: bold;
+      color: #28a745;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Background Video -->
+  <video autoplay muted loop id="bg-video">
+    <source src="5305003-hd_1920_1080_30fps.mp4" type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
+
+  <div class="box">
+    <h2>Pay ₹6000 via UPI</h2>
+    <img src="https://i.postimg.cc/Z5HKDLqZ/gpay.jpg" class="qr" alt="UPI QR Code">
+    <p><strong>UPI ID: logapriya137@oksbi</strong></p>
+
+    <form id="paymentForm">
+      <input type="email" name="email" placeholder="Your Email" required><br>
+      <button type="submit">I’ve Paid – Confirm</button>
+    </form>
+
+    <div id="status"></div>
+  </div>
+
+  <script>
+    document.getElementById("paymentForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const email = e.target.email.value;
+
+      // Show success message
+      document.getElementById("status").innerHTML = "✅ Payment Successful! Confirmation will be sent to " + email;
+
+      // Optional: Add other booking details from URL if needed
+      const params = new URLSearchParams(window.location.search);
+      params.set('email', email);
+
+      // Redirect to thank-you page after 2.5 seconds
+      setTimeout(() => {
+        window.location.href = 'thank-you.html?' + params.toString();
+      }, 2500);
+    });
+  </script>
+
+</body>
+</html>

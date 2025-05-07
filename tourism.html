@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>India Travel Booking</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Video Background */
+    .background-video {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: -1; /* Make sure video stays in the background */
+    }
+
+    .booking-form {
+      background: rgba(255, 255, 255, 0.8); /* Transparent background */
+      padding: 40px;
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+      width: 100%;
+      max-width: 600px;
+      animation: fadeIn 1s ease-out;
+      z-index: 1;
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #4CAF50;
+      font-size: 24px;
+      font-weight: 600;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+      position: relative;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: #333;
+    }
+
+    input[type="text"],
+    input[type="date"],
+    select {
+      width: 100%;
+      padding: 14px 16px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 16px;
+      outline: none;
+      transition: 0.3s;
+    }
+
+    input[type="text"]:focus,
+    input[type="date"]:focus,
+    select:focus {
+      border-color: #4CAF50;
+      box-shadow: 0 0 8px rgba(76, 175, 80, 0.3);
+    }
+
+    .suggestions {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      max-height: 200px;
+      overflow-y: auto;
+      z-index: 10;
+    }
+
+    .suggestion-item {
+      padding: 10px 15px;
+      cursor: pointer;
+      border-bottom: 1px solid #eee;
+    }
+
+    .suggestion-item:hover {
+      background-color: #f1f1f1;
+    }
+
+    .suggestion-item:last-child {
+      border-bottom: none;
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      background-color: #4CAF50;
+      border: none;
+      border-radius: 8px;
+      color: white;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+
+    @keyframes fadeIn {
+      0% { opacity: 0; }
+      100% { opacity: 1; }
+    }
+
+  </style>
+</head>
+<body>
+
+  <!-- Video Background -->
+  <video autoplay muted loop class="background-video">
+    <source src="2098989-uhd_3840_2160_30fps.mp4" type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
+
+  <form class="booking-form" id="bookingForm">
+    <h2>Book Your Trip</h2>
+
+    <!-- Departure City -->
+    <div class="form-group">
+      <label for="departureInput">Departure City</label>
+      <input type="text" id="departureInput" placeholder="Enter your departure city" autocomplete="off" />
+      <div id="departureSuggestions" class="suggestions"></div>
+    </div>
+
+    <!-- Destination City -->
+    <div class="form-group">
+      <label for="destinationInput">Destination City</label>
+      <input type="text" id="destinationInput" placeholder="Enter your destination city" autocomplete="off" />
+      <div id="destinationSuggestions" class="suggestions"></div>
+    </div>
+
+    <!-- Departure Date -->
+    <div class="form-group">
+      <label for="departureDate">Departure Date</label>
+      <input type="date" id="departureDate" />
+    </div>
+
+    <!-- Return Date -->
+    <div class="form-group">
+      <label for="returnDate">Return Date</label>
+      <input type="date" id="returnDate" />
+    </div>
+
+    <button type="submit">Search Trips</button>
+  </form>
+
+  <script>
+    const mainCities = [
+     "Ahmedabad", "Amritsar", "Bengaluru", "Bhopal", "Bhubaneswar", "Chandigarh", 
+"Chennai", "Coimbatore", "Dehradun", "Delhi", "Goa", "Guwahati", 
+"Hyderabad", "Indore", "Jaipur", "Jodhpur", "Kanpur", "Kochi", 
+"Kolkata", "Lucknow", "Ludhiana", "Madurai", "Mumbai", "Nagpur", 
+"Noida", "Patna", "Pune", "Raipur", "Ranchi", "Shimla", 
+"Surat", "Thiruvananthapuram", "Udaipur", "Varanasi", "Vijayawada", "Visakhapatnam","Agra", "Ajmer", "Aligarh", "Allahabad", "Ambala", "Aurangabad", "Bareilly", "Belgaum", 
+"Berhampur", "Bhagalpur", "Bhavnagar", "Bijapur", "Bilaspur", "Chandrapur", "Dhanbad", 
+"Durgapur", "Erode", "Faizabad", "Firozabad", "Gaya", "Gorakhpur", "Hubli", 
+"Jabalpur", "Jalandhar", "Jammu", "Jamui", "Jhansi", "Jorhat", "Karimnagar", 
+"Kolhapur", "Kollam", "Kozhikode", "Kurnool", "Latur", "Malegaon", "Mangalore", 
+"Mathura", "Meerut", "Moradabad", "Muzaffarpur", "Nanded", "Nashik", "Nellore", 
+"Panipat", "Parbhani", "Rajahmundry", "Rajkot", "Rourkela", "Saharanpur", 
+"Salem", "Sangli", "Siliguri", "Solapur", "Srinagar", "Thanjavur", "Tiruchirappalli", 
+"Tirunelveli", "Tirupati", "Tumakuru", "Ujjain", "Vadodara", "Vellore", "Warangal"
+    ];
+
+    const touristCities = [
+      "Ahmedabad", "Amritsar", "Bengaluru", "Bhopal", "Bhubaneswar", "Chandigarh", 
+"Chennai", "Coimbatore", "Dehradun", "Delhi", "Goa", "Guwahati", 
+"Hyderabad", "Indore", "Jaipur", "Jodhpur", "Kanpur", "Kochi", 
+"Kolkata", "Lucknow", "Ludhiana", "Madurai", "Mumbai", "Nagpur", 
+"Noida", "Patna", "Pune", "Raipur", "Ranchi", "Shimla", 
+"Surat", "Thiruvananthapuram", "Udaipur", "Varanasi", "Vijayawada", "Visakhapatnam","Agra", "Ajmer", "Aligarh", "Allahabad", "Ambala", "Aurangabad", "Bareilly", "Belgaum", 
+"Berhampur", "Bhagalpur", "Bhavnagar", "Bijapur", "Bilaspur", "Chandrapur", "Dhanbad", 
+"Durgapur", "Erode", "Faizabad", "Firozabad", "Gaya", "Gorakhpur", "Hubli", 
+"Jabalpur", "Jalandhar", "Jammu", "Jamui", "Jhansi", "Jorhat", "Karimnagar", 
+"Kolhapur", "Kollam", "Kozhikode", "Kurnool", "Latur", "Malegaon", "Mangalore", 
+"Mathura", "Meerut", "Moradabad", "Muzaffarpur", "Nanded", "Nashik", "Nellore", 
+"Panipat", "Parbhani", "Rajahmundry", "Rajkot", "Rourkela", "Saharanpur", 
+"Salem", "Sangli", "Siliguri", "Solapur", "Srinagar", "Thanjavur", "Tiruchirappalli", 
+"Tirunelveli", "Tirupati", "Tumakuru", "Ujjain", "Vadodara", "Vellore", "Warangal"
+
+    ];
+
+    function setupAutocomplete(inputId, suggestionBoxId, cityList) {
+      const input = document.getElementById(inputId);
+      const suggestionBox = document.getElementById(suggestionBoxId);
+
+      input.addEventListener("input", () => {
+        const query = input.value.toLowerCase();
+        suggestionBox.innerHTML = "";
+
+        if (query) {
+          const filteredCities = cityList.filter(city =>
+            city.toLowerCase().startsWith(query)
+          );
+
+          filteredCities.forEach(city => {
+            const div = document.createElement("div");
+            div.classList.add("suggestion-item");
+            div.textContent = city;
+            div.onclick = () => {
+              input.value = city;
+              suggestionBox.innerHTML = "";
+            };
+            suggestionBox.appendChild(div);
+          });
+        }
+      });
+
+      document.addEventListener("click", (e) => {
+        if (e.target !== input) {
+          suggestionBox.innerHTML = "";
+        }
+      });
+    }
+
+    setupAutocomplete("departureInput", "departureSuggestions", mainCities);
+    setupAutocomplete("destinationInput", "destinationSuggestions", touristCities);
+
+    document.getElementById("bookingForm").addEventListener("submit", function (e) {
+      e.preventDefault(); // Prevent actual form submission
+
+      const departure = document.getElementById("departureInput").value;
+      const destination = document.getElementById("destinationInput").value;
+      const depDate = document.getElementById("departureDate").value;
+      const retDate = document.getElementById("returnDate").value;
+
+      const params = new URLSearchParams({
+        departure,
+        destination,
+        depDate,
+        retDate
+      });
+
+      // Redirect to results.html with query parameters
+      window.location.href = `results.html?${params.toString()}`;
+    });
+  </script>
+
+</body>
+</html>

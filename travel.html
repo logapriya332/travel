@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Plan Your Trip - Spark Travels</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: url('https://coachbuildersindia.com/wp-content/uploads/2023/09/Interior-of-Sleeper-Buses-in-India-1024x577.webp') no-repeat center center fixed;
+      background-size: cover;
+      font-family: Arial, sans-serif;
+      padding: 40px 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .trip-container {
+      background: rgba(255, 255, 255, 0.2);
+      padding: 40px;
+      border-radius: 16px;
+      box-shadow: 0 0 30px rgba(0, 0, 0, 0.2);
+      max-width: 600px;
+      width: 90%;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+
+    .trip-container h2 {
+      text-align: center;
+      margin-bottom: 30px;
+      color: #0077b6;
+    }
+
+    .trip-form label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 600;
+    }
+
+    .trip-form input,
+    .trip-form select,
+    .trip-form button {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 20px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 15px;
+    }
+
+    .trip-form button {
+      background-color: #0077b6;
+      color: #fff;
+      border: none;
+      transition: 0.3s ease;
+    }
+
+    .trip-form button:hover {
+      background-color: #005f8a;
+    }
+
+    #map {
+      height: 400px;
+      width: 90%;
+      max-width: 1000px;
+      margin-top: 40px;
+      border-radius: 12px;
+      border: 2px solid #0077b6;
+    }
+
+    @media (max-width: 600px) {
+      .trip-container {
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+  <h2>Plan Your Private Bus Trip</h2>
+  <form id="travel-form">
+    <div class="form-row">
+      <label for="pickup">Pickup Location:</label>
+      <input type="text" id="pickup" name="pickup" placeholder="e.g., Chennai">
+    </div>
+
+    <div class="form-row">
+      <label for="destination">Destination:</label>
+      <select id="destination" name="destination">
+        <option value="">-- Select Destination --</option>
+        <option value="Coimbatore">Coimbatore</option>
+        <option value="Madurai">Madurai</option>
+        <!-- Add more options -->
+      </select>
+    </div>
+
+    <div class="form-row">
+      <label for="date">Travel Date:</label>
+      <input type="date" id="date" name="date">
+    </div>
+
+    <div class="form-row">
+      <label for="busType">Bus Type:</label>
+      <select id="busType" name="busType">
+        <option value="">-- Select Bus Type --</option>
+        <option value="AC">AC</option>
+        <option value="Non-AC">Non-AC</option>
+      </select>
+    </div>
+
+    <div class="form-row">
+      <button type="submit">Find Buses</button>
+    </div>
+  </form>
+
+  <!-- Map can go here if needed -->
+  <div id="map" style="height: 200px; margin-top: 20px;"></div>
+</div>
+
+  <datalist id="cities"></datalist>
+<script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    // Set today's date as minimum
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById("date").setAttribute("min", today);
+
+    // Initialize map
+    const map = L.map('map').setView([22.9734, 78.6569], 5);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    // Load city list into datalist
+    fetch('indian_cities_500.json')
+      .then(response => response.json())
+      .then(data => {
+        const datalist = document.getElementById('cities');
+        data.forEach(city => {
+          const option = document.createElement('option');
+          option.value = city;
+          datalist.appendChild(option);
+        });
+      })
+      .catch(error => console.error('Error loading cities:', error));
+  });
+
+  // 🚀 Handle form submission and redirect with query params
+  document.getElementById("travelForm").addEventListener("submit", function (e) {
+    e.preventDefault(); // Stop form from reloading page
+
+    const pickup = document.getElementById("pickup").value.trim();
+    const destination = document.getElementById("destination").value.trim();
+    const busType = document.getElementById("busType").value.trim();
+
+    const query = `?pickup=${encodeURIComponent(pickup)}&destination=${encodeURIComponent(destination)}&busType=${encodeURIComponent(busType)}`;
+    window.location.href = "buses.html" + query;
+  });
+</script>
+
+</body>
+</html>

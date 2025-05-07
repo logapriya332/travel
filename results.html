@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Bus Type Selector</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f2f2f2;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Video Background */
+    .background-video {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: -1; /* Keeps the video behind the content */
+    }
+
+    .form-container {
+      background-color: rgba(255, 255, 255, 0.8); /* Transparent background for the form */
+      padding: 30px 40px;
+      border-radius: 12px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+      text-align: center;
+      width: 300px;
+      z-index: 1;
+    }
+
+    .form-container h2 {
+      margin-bottom: 20px;
+      color: #333;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: #444;
+      text-align: left;
+    }
+
+    select,
+    input[type="number"] {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 20px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+
+    button {
+      background-color: #007bff;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    /* Scrollable container for bus options */
+    .bus-options {
+      max-height: 300px; /* Adjust the height as per requirement */
+      overflow-y: scroll;
+      margin-top: 20px;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+
+    .bus-options button {
+      width: 100%;
+      margin-bottom: 10px;
+      padding: 12px;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Video Background -->
+  <video autoplay muted loop class="background-video">
+    <source src="16544581-uhd_3840_2160_30fps.mp4" type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
+
+  <div class="form-container">
+    <h2>Bus Booking Form</h2>
+    <form>
+      <label for="busType">Bus Type:</label>
+      <select id="busType" name="busType" required>
+        <option value="">--Select--</option>
+        <option value="AC">AC</option>
+        <option value="Non-AC">Non-AC</option>
+      </select>
+
+      <label for="passengerCount">Passenger Count (max 60):</label>
+      <input type="number" id="passengerCount" name="passengerCount" min="1" max="60" required>
+
+      <button type="submit">Submit</button>
+    </form>
+
+    <!-- Scrollable bus options will appear here -->
+    <div class="bus-options" id="busResults"></div>
+  </div>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const depDate = new Date(params.get('depDate'));
+    const retDate = new Date(params.get('retDate'));
+    const days = Math.max(1, (retDate - depDate) / (1000 * 60 * 60 * 24));
+
+    const busData = {
+      "AC": [
+        { name: "Volvo Travels", pricePerDay: 20000 },
+        { name: "BlueLine Express", pricePerDay: 18000 },
+        { name: "Black perl", pricePerDay: 17000 },
+        { name: "Royal Rider", pricePerDay: 15500 },
+        { name: "Desert Cruiser", pricePerDay: 16000 },
+        { name: "Himalayan Express", pricePerDay: 18000 },
+        { name: "Coastal Voyager", pricePerDay: 16500 },
+        { name: "Valley Runner", pricePerDay: 15000 },
+        { name: "Urban Eagle", pricePerDay: 14000 },
+        { name: "Sunset Liner", pricePerDay: 17500 },
+        { name: "Green Horizon", pricePerDay: 14500 },
+        { name: "Silk Route", pricePerDay: 15800 },
+        { name: "Silver Safari", pricePerDay: 16200 },
+        { name: "Golden Trail", pricePerDay: 18500 }
+      ],
+      "Non-AC": [
+        { name: "Budget Bus Services", pricePerDay: 1200 },
+        { name: "RoadRunner", pricePerDay: 1000 },
+        { name: "Blue Moon", pricePerDay: 15200 },
+        { name: "Mountain Seeker", pricePerDay: 16800 },
+        { name: "Ocean Breeze", pricePerDay: 15900 },
+        { name: "Desi Cruiser", pricePerDay: 14300 },
+        { name: "Starliner", pricePerDay: 17700 },
+        { name: "Amber Wheels", pricePerDay: 14900 },
+        { name: "Pearl Voyager", pricePerDay: 16100 },
+        { name: "City Sprint", pricePerDay: 13800 },
+        { name: "Sunshine Express", pricePerDay: 14600 },
+        { name: "Majestic Ride", pricePerDay: 17200 },
+        { name: "Metro King", pricePerDay: 15000 },
+        { name: "Highway Prince", pricePerDay: 16300 },
+        { name: "Silver Arrow", pricePerDay: 15850 },
+        { name: "Safari Queen", pricePerDay: 16900 },
+        { name: "Freedom Wheels", pricePerDay: 15700 }
+      ]
+    };
+
+    document.querySelector("form").addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      const busType = document.getElementById("busType").value;
+      const passengerCount = parseInt(document.getElementById("passengerCount").value);
+
+      const busList = busData[busType] || [];
+      const busListContainer = document.getElementById("busResults");
+      busListContainer.innerHTML = `<h3>Select a ${busType} Bus:</h3>`;
+
+      busList.forEach(bus => {
+        const button = document.createElement("button");
+        button.textContent = `${bus.name} (₹${bus.pricePerDay}/day)`;
+        button.onclick = () => {
+          const totalPrice = bus.pricePerDay * days;
+
+          // Pass details to the next page
+          const query = new URLSearchParams({
+            busName: bus.name,
+            totalPrice,
+            days,
+            passengerCount,
+            busType
+          }).toString();
+
+          window.location.href = `user-details.html?${query}`;
+        };
+        busListContainer.appendChild(button);
+      });
+    });
+  </script>
+
+</body>
+</html>
